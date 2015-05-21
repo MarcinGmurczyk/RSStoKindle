@@ -1,6 +1,6 @@
 ﻿namespace RSStoKindle
 {
-    partial class WebBrowserForm
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.

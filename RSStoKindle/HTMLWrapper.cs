@@ -10,11 +10,11 @@ namespace RSStoKindle
         private HtmlDocument _originalHTML;
 
         public string Path { get; private set; }
+
         public string HTMLString
         {
             get { return HtmlCode.DocumentNode.OuterHtml; }
         }
-        
 
         public HtmlDocument HtmlCode { get; private set; }
 
@@ -26,6 +26,7 @@ namespace RSStoKindle
         {
             Path = path;
         }
+
         public void RetrieveHtml()
         {
             HtmlWeb web = new HtmlWeb();

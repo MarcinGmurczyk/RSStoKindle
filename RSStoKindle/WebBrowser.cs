@@ -1,9 +1,7 @@
 ﻿using Gecko;
-using RSStoKindle;
 using System;
-using System.Windows.Forms;
-using System.Threading;
 using System.IO;
+using System.Windows.Forms;
 
 namespace RSStoKindle
 {
@@ -31,6 +29,7 @@ namespace RSStoKindle
             Browser.Navigate(FilePath.LocalPath);
             Browser.DomClick += Browser_DomClick;
         }
+
         private void Browser_DomClick(object sender, DomMouseEventArgs e)
         {
             var a = e.Target.CastToGeckoElement().GetSmallXpath();
@@ -38,7 +37,6 @@ namespace RSStoKindle
             wrapperHTML.SaveHTML(FilePath);
             Browser.Reload();
         }
-
 
         private void Browser_KeyDown(object sender, KeyEventArgs e)
         {
@@ -60,7 +58,6 @@ namespace RSStoKindle
         {
             if (node.NodeType == NodeType.Attribute)
             {
-
                 return String.Format("{0}/@{1}", GetSmallXpath(((GeckoAttribute)node).OwnerDocument), node.LocalName);
             }
             if (node.ParentNode == null)
@@ -71,23 +68,19 @@ namespace RSStoKindle
             if (!String.IsNullOrEmpty(elementId))
             {
                 return String.Format("//*[@id=\"{0}\"]", elementId);
-
             }
-
 
             int indexInParent = 1;
             GeckoNode siblingNode = node.PreviousSibling;
 
             while (siblingNode != null)
             {
-
                 if (siblingNode.LocalName == node.LocalName)
                 {
                     indexInParent++;
                 }
                 siblingNode = siblingNode.PreviousSibling;
             }
-
 
             return String.Format("{0}/{1}[{2}]", GetSmallXpath(node.ParentNode), node.LocalName, indexInParent);
         }
