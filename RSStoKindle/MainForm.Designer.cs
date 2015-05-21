@@ -1,6 +1,6 @@
-﻿namespace WindowsFormsApplication1
+﻿namespace RSStoKindle
 {
-    partial class MainForm
+    partial class WebBrowserForm
     {
         /// <summary>
         /// Required designer variable.
@@ -30,9 +30,10 @@
         {
             this.components = new System.ComponentModel.Container();
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Text = "WebBrowser";
+            this.Text = "Form1";
         }
 
         #endregion
     }
 }
+

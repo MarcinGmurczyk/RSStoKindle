@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsFormsApplication1", "WindowsFormsApplication1\WindowsFormsApplication1.csproj", "{F625C07E-42B0-44E5-A9E6-28D651D8C89D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSStoKindle", "RSStoKindle\RSStoKindle.csproj", "{F625C07E-42B0-44E5-A9E6-28D651D8C89D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

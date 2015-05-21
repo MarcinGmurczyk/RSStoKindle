@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using System.Threading;
 using System.IO;
 
-namespace WindowsFormsApplication1
+namespace RSStoKindle
 {
     public partial class WebBrowserForm : Form
     {
