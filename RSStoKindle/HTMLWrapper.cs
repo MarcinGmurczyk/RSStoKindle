@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace RSStoKindle
 {
@@ -17,8 +18,6 @@ namespace RSStoKindle
         }
 
         public HtmlDocument HtmlCode { get; private set; }
-
-        public List<ImageHTML> Images { get; private set; }
 
         public string Text { get; private set; }
 
@@ -50,6 +49,27 @@ namespace RSStoKindle
             return true;
         }
 
+        /// <summary>
+        /// remove links and comments also
+        /// </summary>
+        public void SanitazeHTML()
+        {
+            var a = HtmlCode.DocumentNode.Descendants();
+
+            HtmlCode.DocumentNode.Descendants()
+                .Where(n => n.Name == "script" || n.Name == "#comment")
+                .ToList()
+                .ForEach(n => n.Remove());
+
+            //foreach (HtmlNode link in HtmlCode.DocumentNode.SelectNodes("//a"))
+            //{
+            //    HtmlNode text = HtmlCode.CreateElement("p");
+            //    link.ParentNode.ReplaceChild(text, link);
+            //}
+
+
+        }
+
         public bool RemoveElement(string xpath)
         {
             var node = HtmlCode.DocumentNode.SelectSingleNode(xpath);
@@ -78,15 +98,6 @@ namespace RSStoKindle
                 HtmlCode.DocumentNode.AppendChild(node);
             }
             return true;
-        }
-
-        public void CleanSourceCode()
-        {
-            // TODO: kod
-        }
-
-        public class ImageHTML
-        {
         }
     }
 }

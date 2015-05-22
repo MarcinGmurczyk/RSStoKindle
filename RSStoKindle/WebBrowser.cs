@@ -19,6 +19,7 @@ namespace RSStoKindle
             WebPath = webAddress;
             wrapperHTML = new WrapperHTML(webAddress.AbsoluteUri);
             wrapperHTML.RetrieveHtml();
+            wrapperHTML.SanitazeHTML();
             Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\" + WebPath.Host + WebPath.LocalPath);
             FilePath = new Uri(Directory.GetCurrentDirectory() + "\\" + WebPath.Host + WebPath.LocalPath + "\\a.html");
 
@@ -28,7 +29,20 @@ namespace RSStoKindle
             Browser.Dock = DockStyle.Fill;
             Browser.Navigate(FilePath.LocalPath);
             Browser.DomClick += Browser_DomClick;
+            Browser.DomMouseOver += Browser_DomMouseOver;
+            Browser.DomMouseOut += Browser_DomMouseOut;
         }
+
+        void Browser_DomMouseOut(object sender, DomMouseEventArgs e)
+        {
+            e.Target.CastToGeckoElement().RemoveAttribute("style");
+        }
+
+        void Browser_DomMouseOver(object sender, DomMouseEventArgs e)
+        {
+            e.Target.CastToGeckoElement().SetAttribute("style", "background-color:red;");
+        }
+
 
         private void Browser_DomClick(object sender, DomMouseEventArgs e)
         {
@@ -36,19 +50,6 @@ namespace RSStoKindle
             wrapperHTML.RemoveElement(a);
             wrapperHTML.SaveHTML(FilePath);
             Browser.Reload();
-        }
-
-        private void Browser_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.S)
-            {
-                MessageBox.Show("a");
-            }
-        }
-
-        private void Browser_MouseHover(object sender, EventArgs e)
-        {
-            MessageBox.Show("a");
         }
     }
 

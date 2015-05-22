@@ -8,7 +8,7 @@ namespace RSStoKindle
         public MainForm()
         {
             InitializeComponent();
-            var a = new WebBrowserForm(new Uri("http://www.kwantowo.pl/2015/05/21/kb-21-nietypowe-glazy-na-komecie-67p/"));
+            var a = new WebBrowserForm(new Uri("http://kosmosbeztajemnic.blogspot.com/2015/05/gwiazdy-neutronowepulsary-i-magnetary.html"));
             a.Show();
         }
     }
