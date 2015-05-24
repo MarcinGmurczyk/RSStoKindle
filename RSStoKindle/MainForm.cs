@@ -8,7 +8,7 @@ namespace RSStoKindle
         public MainForm()
         {
             InitializeComponent();
-            var a = new WebBrowserForm(new Uri("http://kosmosbeztajemnic.blogspot.com/2015/05/gwiazdy-neutronowepulsary-i-magnetary.html"));
+            var a = new WebBrowserForm(new Uri("http://www.kwantowo.pl/2015/05/22/kb-22-miesiecznica-budzika/"));
             a.Show();
         }
     }

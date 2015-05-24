@@ -40,7 +40,7 @@ namespace RSStoKindle
                 {
                     File.Delete(path.LocalPath);
                 }
-                HtmlCode.Save(path.LocalPath);
+                HtmlCode.Save(path.LocalPath, System.Text.Encoding.UTF8);
             }
             catch (Exception e)
             {
@@ -52,22 +52,27 @@ namespace RSStoKindle
         /// <summary>
         /// remove links and comments also
         /// </summary>
-        public void SanitazeHTML()
+        public void CleanHTML()
         {
-            var a = HtmlCode.DocumentNode.Descendants();
-
             HtmlCode.DocumentNode.Descendants()
                 .Where(n => n.Name == "script" || n.Name == "#comment")
                 .ToList()
                 .ForEach(n => n.Remove());
 
-            //foreach (HtmlNode link in HtmlCode.DocumentNode.SelectNodes("//a"))
-            //{
-            //    HtmlNode text = HtmlCode.CreateElement("p");
-            //    link.ParentNode.ReplaceChild(text, link);
-            //}
+            foreach (HtmlNode link in HtmlCode.DocumentNode.SelectNodes("//a"))
+            {
+                HtmlNode text = HtmlCode.CreateElement("p");
+                text.InnerHtml = link.InnerHtml;
+                link.ParentNode.ReplaceChild(text, link);
+            }
+        }
 
-
+        public void RemoveEmptyDivs()
+        {
+            HtmlCode.DocumentNode.Descendants("div")
+                .Where(n => n.InnerHtml.Trim() == string.Empty)
+                .ToList()
+                .ForEach(n => n.Remove());
         }
 
         public bool RemoveElement(string xpath)
@@ -95,7 +100,18 @@ namespace RSStoKindle
             else
             {
                 HtmlCode = new HtmlDocument();
-                HtmlCode.DocumentNode.AppendChild(node);
+                var htmlTag = HtmlCode.CreateElement("html");
+                var htmlHead = HtmlCode.CreateElement("head");
+                var htmlEncoding = HtmlCode.CreateElement("meta");
+                htmlEncoding.SetAttributeValue("http-equiv", "Content-Type");
+                htmlEncoding.SetAttributeValue("content", "text/html; charset=utf-8");
+                var htmlBody = HtmlCode.CreateElement("body");
+
+                htmlHead.AppendChild(htmlEncoding);
+                htmlTag.AppendChild(htmlHead);
+                htmlTag.AppendChild(htmlBody);
+                htmlBody.AppendChild(node);
+                HtmlCode.DocumentNode.AppendChild(htmlTag);
             }
             return true;
         }
