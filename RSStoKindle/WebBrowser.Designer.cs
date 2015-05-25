@@ -132,7 +132,7 @@
             // 
             // buttonDecline
             // 
-            this.buttonDecline.Enabled = false;
+            this.buttonDecline.Enabled = true;
             this.buttonDecline.Location = new System.Drawing.Point(413, 70);
             this.buttonDecline.Name = "buttonDecline";
             this.buttonDecline.Size = new System.Drawing.Size(75, 23);

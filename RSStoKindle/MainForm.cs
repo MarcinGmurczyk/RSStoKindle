@@ -7,8 +7,12 @@ namespace RSStoKindle
     {
         public MainForm()
         {
-            InitializeComponent();
-            var a = new WebBrowserForm(new Uri("http://www.kwantowo.pl/2015/05/22/kb-22-miesiecznica-budzika/"));
+            InitializeComponent();            
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            var a = new WebBrowserForm(new Uri(textBox1.Text));
             a.Show();
         }
     }

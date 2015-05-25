@@ -75,13 +75,13 @@ namespace RSStoKindle
             }
         }
 
-        public void RemoveEmptyDivs()
-        {
-            HtmlCode.DocumentNode.Descendants("div")
-                .Where(n => n.InnerHtml.Trim() == string.Empty)
-                .ToList()
-                .ForEach(n => n.Remove());
-        }
+        //public void RemoveEmptyDivs()
+        //{
+        //    HtmlCode.DocumentNode.Descendants("div")
+        //        .Where(n => n.InnerHtml.Trim() == string.Empty)
+        //        .ToList()
+        //        .ForEach(n => n.Remove());
+        //}
 
         public bool RemoveElement(string xpath)
         {

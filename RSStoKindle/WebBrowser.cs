@@ -13,7 +13,7 @@ namespace RSStoKindle
         public WrapperHTML wrapperHTML;
         public Uri WebPath;
         public Uri FilePath;
-        public Queue<HtmlAgilityPack.HtmlDocument> History = new Queue<HtmlAgilityPack.HtmlDocument>();
+        public Stack<HtmlAgilityPack.HtmlDocument> History = new Stack<HtmlAgilityPack.HtmlDocument>();
 
         private GeckoNode _currentElementClasses;
 
@@ -84,7 +84,7 @@ namespace RSStoKindle
             var str = wrapperHTML.HTMLString;
             var oldHTML = new HtmlAgilityPack.HtmlDocument();
             oldHTML.LoadHtml(str);
-            History.Enqueue(oldHTML);
+            History.Push(oldHTML);
             buttonBack.Enabled = true;
             var a = e.Target.CastToGeckoElement().GetSmallXpath();
             if (this.radioButton1.Checked)
@@ -96,7 +96,7 @@ namespace RSStoKindle
                 wrapperHTML.RemoveAllExceptThis(a);
             }
             wrapperHTML.SaveHTML(FilePath);
-            wrapperHTML.RemoveEmptyDivs();
+            //wrapperHTML.RemoveEmptyDivs();
             Browser.Reload();
         }
 
@@ -118,7 +118,7 @@ namespace RSStoKindle
         {
             try
             {
-                wrapperHTML.HtmlCode = History.Dequeue();
+                wrapperHTML.HtmlCode = History.Pop();
                 wrapperHTML.SaveHTML(FilePath);
                 Browser.Reload();
             }
