@@ -17,7 +17,7 @@ namespace RSStoKindle
             get { return HtmlCode.DocumentNode.OuterHtml; }
         }
 
-        public HtmlDocument HtmlCode { get; private set; }
+        public HtmlDocument HtmlCode { get; set; }
 
         public string Text { get; private set; }
 
@@ -32,6 +32,14 @@ namespace RSStoKindle
             _originalHTML = HtmlCode = web.Load(Path);
         }
 
+        public void ResetHTML()
+        {
+            var str = _originalHTML.DocumentNode.OuterHtml;
+            var originalHTML = new HtmlAgilityPack.HtmlDocument();
+            originalHTML.LoadHtml(str);
+            HtmlCode = originalHTML;            
+        }
+
         public bool SaveHTML(Uri path)
         {
             try
@@ -44,7 +52,7 @@ namespace RSStoKindle
             }
             catch (Exception e)
             {
-                return false;
+                System.Windows.Forms.MessageBox.Show("Nie udało się zapisać pliku");
             }
             return true;
         }

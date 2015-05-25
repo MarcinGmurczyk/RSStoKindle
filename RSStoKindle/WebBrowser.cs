@@ -1,6 +1,7 @@
 ﻿using Gecko;
 using HtmlAgilityPack;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 
@@ -12,6 +13,7 @@ namespace RSStoKindle
         public WrapperHTML wrapperHTML;
         public Uri WebPath;
         public Uri FilePath;
+        public Queue<HtmlAgilityPack.HtmlDocument> History = new Queue<HtmlAgilityPack.HtmlDocument>();
 
         private GeckoNode _currentElementClasses;
 
@@ -23,8 +25,8 @@ namespace RSStoKindle
             wrapperHTML = new WrapperHTML(webAddress.AbsoluteUri);
             wrapperHTML.RetrieveHtml();
             wrapperHTML.CleanHTML();
-            Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\" + WebPath.Host + WebPath.LocalPath);
-            FilePath = new Uri(Directory.GetCurrentDirectory() + "\\" + WebPath.Host + WebPath.LocalPath + "\\a.html");
+            Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\documents\\" + WebPath.Host + WebPath.LocalPath);
+            FilePath = new Uri(Directory.GetCurrentDirectory() + "\\documents\\" + WebPath.Host + WebPath.LocalPath + "\\a.html");
 
             wrapperHTML.SaveHTML(FilePath);
 
@@ -33,22 +35,10 @@ namespace RSStoKindle
             this.WindowState = FormWindowState.Maximized;
             Browser.Navigate(FilePath.LocalPath);
             this.labelPageHost.Text = webAddress.Host;
-            this.button1.Click += button1_Click;
-            this.button2.Click += button2_Click;
 
             Browser.DomClick += Browser_DomClick;
             Browser.DomMouseOver += Browser_DomMouseOver;
             Browser.DomMouseOut += Browser_DomMouseOut;
-        }
-
-        void button2_Click(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        void button1_Click(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
         }
 
         private void Browser_DomMouseOut(object sender, DomMouseEventArgs e)
@@ -91,6 +81,11 @@ namespace RSStoKindle
 
         private void Browser_DomClick(object sender, DomMouseEventArgs e)
         {
+            var str = wrapperHTML.HTMLString;
+            var oldHTML = new HtmlAgilityPack.HtmlDocument();
+            oldHTML.LoadHtml(str);
+            History.Enqueue(oldHTML);
+            buttonBack.Enabled = true;
             var a = e.Target.CastToGeckoElement().GetSmallXpath();
             if (this.radioButton1.Checked)
             {
@@ -99,10 +94,64 @@ namespace RSStoKindle
             else
             {
                 wrapperHTML.RemoveAllExceptThis(a);
-            }            
+            }
             wrapperHTML.SaveHTML(FilePath);
             wrapperHTML.RemoveEmptyDivs();
             Browser.Reload();
+        }
+
+        private void buttonDecline_Click(object sender, EventArgs e)
+        {
+           var result = MessageBox.Show("Czy na pewno chcesz odrzucić edycję dokumentu?", "Odrzuć dokument",
+                                        MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+           switch (result)
+           {
+               case DialogResult.No:
+                   break;
+               case DialogResult.Yes:
+                   this.Close();
+                   break;
+           }
+        }
+
+        private void buttonBack_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                wrapperHTML.HtmlCode = History.Dequeue();
+                wrapperHTML.SaveHTML(FilePath);
+                Browser.Reload();
+            }
+            catch (InvalidOperationException ex) 
+            {
+                MessageBox.Show("blad kolejki historii");
+            }
+            finally
+            {
+                if (History.Count == 0) buttonBack.Enabled = false;
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Browser.Reload();
+        }
+
+        private void buttonLoadOriginal_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("Czy chcesz załadować niezmodyfikowany plik HTML?", "Alert",
+                                        MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+            switch (result)
+            {
+                case DialogResult.No:
+                    break;
+                case DialogResult.Yes:
+                    wrapperHTML.ResetHTML();
+                    History.Clear();
+                    buttonBack.Enabled = false;
+                    Browser.Reload();
+                    break;
+            }
         }
 
     }
