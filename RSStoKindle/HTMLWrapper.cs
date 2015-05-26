@@ -82,14 +82,26 @@ namespace RSStoKindle
             var host = new Uri(Path).Host;
 
             var notRemovedElements = HtmlCode.DocumentNode.Descendants().ToList();
-            var list = new List<HtmlAttributeCollection>();
+            var value = new List<string>();
+            var result = new Dictionary<string, List<string>>();
+
 
             foreach (var item in notRemovedElements)
             {
-                list.Add(item.Attributes);
+                foreach (var attr in item.Attributes)
+                {
+                    if (!result.ContainsKey(attr.Name))
+                    {
+                        result.Add(attr.Name, new List<string>());
+                        result[attr.Name].Add(attr.Value);
+                    }
+                    else
+                    {
+                        result[attr.Name].Add(attr.Value);
+                    }
+                }
             }
-
-            return new CutHTMLInfo(host, list);
+            return new CutHTMLInfo(host, result);
         }
 
         //public void RemoveEmptyDivs()
@@ -144,8 +156,8 @@ namespace RSStoKindle
         public void SaveCutHTMLInfo()
         {
             IFormatter formatter = new BinaryFormatter();
-            Stream stream = new FileStream(Directory.GetCurrentDirectory() + "\\documents\\" + new Uri(Path).Host + new Uri(Path).Host + 
-                                            "cut.bin", FileMode.Create, FileAccess.Write, FileShare.None);
+            Stream stream = new FileStream(Directory.GetCurrentDirectory() + "\\documents\\" + new Uri(Path).Host +
+                                           "\\cut.bin", FileMode.Create, FileAccess.Write, FileShare.None);
             formatter.Serialize(stream, CheckForNotRemovedElements());
             stream.Close();
         }
@@ -153,8 +165,8 @@ namespace RSStoKindle
         public void LoadAndCutHTMLInfo()
         {
             IFormatter formatter = new BinaryFormatter();
-            Stream stream = new FileStream(Directory.GetCurrentDirectory() + "\\documents\\" + new Uri(Path).Host + new Uri(Path).Host +
-                                            "cut.bin", FileMode.Open, FileAccess.Read, FileShare.Read);
+            Stream stream = new FileStream(Directory.GetCurrentDirectory() + "\\documents\\" + new Uri(Path).Host +
+                                           "\\cut.bin", FileMode.Open, FileAccess.Read, FileShare.Read);
             CutHTMLInfo cutInfo = (CutHTMLInfo)formatter.Deserialize(stream);
             stream.Close();
 
@@ -166,11 +178,28 @@ namespace RSStoKindle
                 .ToList()
                 .ForEach(n =>
                 {
-                    foreach (var item in cutInfo.NotRemovedElements)
+                    if (n.Attributes.Count == 0) return; //czy nie return?
+                    foreach (var nameInDic in cutInfo.NotRemovedElements.Keys)
                     {
-                        if (!n.Attributes.Equals(item))
+                        foreach (var valueInNode in n.Attributes.AttributesWithName(nameInDic))
                         {
-                            n.Remove();
+                            var value = cutInfo.NotRemovedElements[nameInDic];
+                            foreach (var item in value)
+                            {
+                                if (item == valueInNode.Value) continue;
+                                foreach (var child in n.ChildNodes)
+                                {
+                                    if (n != null && n.ParentNode != null)
+                                    {
+                                        n.ParentNode.InsertBefore(child, n);
+                                    }
+                                    else
+                                    {
+                                        n.Remove();
+                                    }
+                                }
+                                n.Remove();
+                            }
                         }
                     }                    
                 });
@@ -180,10 +209,13 @@ namespace RSStoKindle
     [Serializable]
     public class CutHTMLInfo
     {
-        public List<HtmlAttributeCollection> NotRemovedElements { get; set; }
+        private string host;
+        private Dictionary<string, List<string>> result;
+
+        public Dictionary<string,List<string>> NotRemovedElements { get; set; }
         public string HostName { get; set; }
 
-        public CutHTMLInfo(string hostName, List<HtmlAttributeCollection> notRemovedElements)
+        public CutHTMLInfo(string hostName, Dictionary<string, List<string>> notRemovedElements)
         {
             HostName = hostName;
             NotRemovedElements = notRemovedElements;
