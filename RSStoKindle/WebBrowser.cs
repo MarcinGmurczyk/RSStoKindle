@@ -1,5 +1,4 @@
 ﻿using Gecko;
-using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -61,7 +60,6 @@ namespace RSStoKindle
             }
             else
             {
-
                 return _currentElementClasses.NodeValue + "background-color:red;";
             }
         }
@@ -77,7 +75,6 @@ namespace RSStoKindle
                 return _currentElementClasses.NodeValue.Replace("background-color:red;", string.Empty);
             }
         }
-
 
         private void Browser_DomClick(object sender, DomMouseEventArgs e)
         {
@@ -102,16 +99,17 @@ namespace RSStoKindle
 
         private void buttonDecline_Click(object sender, EventArgs e)
         {
-           var result = MessageBox.Show("Czy na pewno chcesz odrzucić edycję dokumentu?", "Odrzuć dokument",
-                                        MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
-           switch (result)
-           {
-               case DialogResult.No:
-                   break;
-               case DialogResult.Yes:
-                   this.Close();
-                   break;
-           }
+            var result = MessageBox.Show("Czy na pewno chcesz odrzucić edycję dokumentu?", "Odrzuć dokument",
+                                         MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+            switch (result)
+            {
+                case DialogResult.No:
+                    break;
+
+                case DialogResult.Yes:
+                    this.Close();
+                    break;
+            }
         }
 
         private void buttonBack_Click(object sender, EventArgs e)
@@ -122,7 +120,7 @@ namespace RSStoKindle
                 wrapperHTML.SaveHTML(FilePath);
                 Browser.Reload();
             }
-            catch (InvalidOperationException ex) 
+            catch (InvalidOperationException ex)
             {
                 MessageBox.Show("blad kolejki historii");
             }
@@ -134,6 +132,7 @@ namespace RSStoKindle
 
         private void button1_Click(object sender, EventArgs e)
         {
+            wrapperHTML.LoadAndCutHTMLInfo();
             Browser.Reload();
         }
 
@@ -145,6 +144,7 @@ namespace RSStoKindle
             {
                 case DialogResult.No:
                     break;
+
                 case DialogResult.Yes:
                     wrapperHTML.ResetHTML();
                     History.Clear();
@@ -154,6 +154,21 @@ namespace RSStoKindle
             }
         }
 
+        private void buttonAccept_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("Czy chcesz zazapisać zmiany w pliku HTML?", "Alert",
+                                        MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+
+            switch (result)
+            {
+                case DialogResult.No:
+                    break;
+
+                case DialogResult.Yes:
+                    wrapperHTML.SaveCutHTMLInfo();
+                    break;
+            }
+        }
     }
 
     public static class EXten

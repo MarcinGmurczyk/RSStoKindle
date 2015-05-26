@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace RSStoKindle
 {
@@ -75,6 +77,21 @@ namespace RSStoKindle
             }
         }
 
+        private CutHTMLInfo CheckForNotRemovedElements()
+        {
+            var host = new Uri(Path).Host;
+
+            var notRemovedElements = HtmlCode.DocumentNode.Descendants().ToList();
+            var list = new List<HtmlAttributeCollection>();
+
+            foreach (var item in notRemovedElements)
+            {
+                list.Add(item.Attributes);
+            }
+
+            return new CutHTMLInfo(host, list);
+        }
+
         //public void RemoveEmptyDivs()
         //{
         //    HtmlCode.DocumentNode.Descendants("div")
@@ -122,6 +139,54 @@ namespace RSStoKindle
                 HtmlCode.DocumentNode.AppendChild(htmlTag);
             }
             return true;
+        }
+
+        public void SaveCutHTMLInfo()
+        {
+            IFormatter formatter = new BinaryFormatter();
+            Stream stream = new FileStream(Directory.GetCurrentDirectory() + "\\documents\\" + new Uri(Path).Host + new Uri(Path).Host + 
+                                            "cut.bin", FileMode.Create, FileAccess.Write, FileShare.None);
+            formatter.Serialize(stream, CheckForNotRemovedElements());
+            stream.Close();
+        }
+
+        public void LoadAndCutHTMLInfo()
+        {
+            IFormatter formatter = new BinaryFormatter();
+            Stream stream = new FileStream(Directory.GetCurrentDirectory() + "\\documents\\" + new Uri(Path).Host + new Uri(Path).Host +
+                                            "cut.bin", FileMode.Open, FileAccess.Read, FileShare.Read);
+            CutHTMLInfo cutInfo = (CutHTMLInfo)formatter.Deserialize(stream);
+            stream.Close();
+
+            var doc = new HtmlDocument();
+            var str = _originalHTML.DocumentNode.OuterHtml;
+            doc.LoadHtml(str);
+
+            doc.DocumentNode.Descendants()
+                .ToList()
+                .ForEach(n =>
+                {
+                    foreach (var item in cutInfo.NotRemovedElements)
+                    {
+                        if (!n.Attributes.Equals(item))
+                        {
+                            n.Remove();
+                        }
+                    }                    
+                });
+        }
+    }
+
+    [Serializable]
+    public class CutHTMLInfo
+    {
+        public List<HtmlAttributeCollection> NotRemovedElements { get; set; }
+        public string HostName { get; set; }
+
+        public CutHTMLInfo(string hostName, List<HtmlAttributeCollection> notRemovedElements)
+        {
+            HostName = hostName;
+            NotRemovedElements = notRemovedElements;
         }
     }
 }
