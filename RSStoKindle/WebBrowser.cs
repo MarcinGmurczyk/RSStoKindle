@@ -133,6 +133,7 @@ namespace RSStoKindle
         private void button1_Click(object sender, EventArgs e)
         {
             wrapperHTML.LoadAndCutHTMLInfo();
+            wrapperHTML.SaveHTML(FilePath);
             Browser.Reload();
         }
 

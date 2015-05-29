@@ -39,7 +39,7 @@ namespace RSStoKindle
             var str = _originalHTML.DocumentNode.OuterHtml;
             var originalHTML = new HtmlAgilityPack.HtmlDocument();
             originalHTML.LoadHtml(str);
-            HtmlCode = originalHTML;            
+            HtmlCode = originalHTML;
         }
 
         public bool SaveHTML(Uri path)
@@ -81,26 +81,18 @@ namespace RSStoKindle
         {
             var host = new Uri(Path).Host;
 
-            var notRemovedElements = HtmlCode.DocumentNode.Descendants().ToList();
-            var value = new List<string>();
-            var result = new Dictionary<string, List<string>>();
+            var notRemovedElements = HtmlCode.DocumentNode.Descendants().Where(n =>
+            {
+                return n.Attributes.Contains("class");
+            });
 
+            List<string> result = new List<string>();
 
             foreach (var item in notRemovedElements)
             {
-                foreach (var attr in item.Attributes)
-                {
-                    if (!result.ContainsKey(attr.Name))
-                    {
-                        result.Add(attr.Name, new List<string>());
-                        result[attr.Name].Add(attr.Value);
-                    }
-                    else
-                    {
-                        result[attr.Name].Add(attr.Value);
-                    }
-                }
+                result.Add(item.Attributes["class"].Value);
             }
+            
             return new CutHTMLInfo(host, result);
         }
 
@@ -174,34 +166,49 @@ namespace RSStoKindle
             var str = _originalHTML.DocumentNode.OuterHtml;
             doc.LoadHtml(str);
 
-            doc.DocumentNode.Descendants()
+            HtmlCode = new HtmlDocument();
+            var htmlTag = HtmlCode.CreateElement("html");
+            var htmlHead = HtmlCode.CreateElement("head");
+            var htmlEncoding = HtmlCode.CreateElement("meta");
+            htmlEncoding.SetAttributeValue("http-equiv", "Content-Type");
+            htmlEncoding.SetAttributeValue("content", "text/html; charset=utf-8");
+            var htmlBody = HtmlCode.CreateElement("body");
+
+            htmlBody.InnerHtml = doc.DocumentNode.SelectSingleNode("//body").InnerHtml;
+
+            htmlHead.AppendChild(htmlEncoding);
+            htmlTag.AppendChild(htmlHead);
+            htmlTag.AppendChild(htmlBody);
+            HtmlCode = new HtmlDocument();
+            HtmlCode.DocumentNode.AppendChild(htmlTag);
+
+            HtmlCode.DocumentNode.SelectSingleNode("//body").Descendants()
                 .ToList()
                 .ForEach(n =>
                 {
-                    if (n.Attributes.Count == 0) return; //czy nie return?
-                    foreach (var nameInDic in cutInfo.NotRemovedElements.Keys)
+                    if (n.Attributes.Count == 0 || !n.Attributes.Contains("class")) 
                     {
-                        foreach (var valueInNode in n.Attributes.AttributesWithName(nameInDic))
+                        var parentNode = n.ParentNode;
+                        if (parentNode != null)
+                            parentNode.RemoveChild(n, true);
+                        else
                         {
-                            var value = cutInfo.NotRemovedElements[nameInDic];
-                            foreach (var item in value)
-                            {
-                                if (item == valueInNode.Value) continue;
-                                foreach (var child in n.ChildNodes)
-                                {
-                                    if (n != null && n.ParentNode != null)
-                                    {
-                                        n.ParentNode.InsertBefore(child, n);
-                                    }
-                                    else
-                                    {
-                                        n.Remove();
-                                    }
-                                }
-                                n.Remove();
-                            }
+                            n.Remove();
                         }
-                    }                    
+                        return;
+                    }
+
+                    if (cutInfo.NotRemovedElements.Contains(n.Attributes["class"].Value))
+                    {
+                        return;
+                    }
+                    var parentNode1 = n.ParentNode;
+                    if (parentNode1 != null)
+                        parentNode1.RemoveChild(n, true);
+                    else
+                    {
+                        n.Remove();
+                    }
                 });
         }
     }
@@ -210,12 +217,12 @@ namespace RSStoKindle
     public class CutHTMLInfo
     {
         private string host;
-        private Dictionary<string, List<string>> result;
 
-        public Dictionary<string,List<string>> NotRemovedElements { get; set; }
+        public List<string> NotRemovedElements { get; set; }
+
         public string HostName { get; set; }
 
-        public CutHTMLInfo(string hostName, Dictionary<string, List<string>> notRemovedElements)
+        public CutHTMLInfo(string hostName, List<string> notRemovedElements)
         {
             HostName = hostName;
             NotRemovedElements = notRemovedElements;
